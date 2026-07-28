@@ -21,55 +21,67 @@
     .wrapper {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      gap: 16px;
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
     }
 
     .nav-btn {
       background: #e2ebf0;
       color: #78909c;
       border: none;
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
       transition: all 0.2s ease;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .nav-btn:hover {
       background: #cfd8dc;
       color: #37474f;
-      transform: scale(1.05);
+      transform: scale(1.08);
+    }
+
+    .notebook-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 380px;
+    }
+
+    .header-date {
+      width: 100%;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #6c8ca7;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      user-select: none;
     }
 
     .notebook-container {
       position: relative;
-      flex: 1;
-      height: 560px;
+      width: 360px;
+      height: 480px;
       background: url('https://github.com/mkhurziya27/Notion-Notebook-Widget/blob/main/notebook-bg.png?raw=true') no-repeat center center;
-      background-size: contain;
-      padding: 130px 45px 35px 65px;
+      background-size: 100% 100%;
+      /* Pushes typing area safely below the "daily check in" banner */
+      padding: 145px 35px 45px 55px;
       display: flex;
       flex-direction: column;
-    }
-
-    .header-date {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #6c8ca7;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
     }
 
     textarea {
@@ -80,31 +92,32 @@
       outline: none;
       resize: none;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 500;
       color: #2c3e50;
-      line-height: 28px;
+      line-height: 24px;
     }
 
     .bottom-bar {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 5px;
-      z-index: 10;
+      margin-top: 12px;
+      padding: 0 5px;
     }
 
     .save-btn {
       background-color: #8bbabb;
       color: white;
       border: none;
-      padding: 6px 16px;
-      border-radius: 16px;
+      padding: 8px 20px;
+      border-radius: 20px;
       font-family: 'Quicksand', sans-serif;
       font-weight: 700;
       font-size: 0.85rem;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(139, 186, 187, 0.3);
+      box-shadow: 0 4px 10px rgba(139, 186, 187, 0.35);
       transition: all 0.2s ease;
     }
 
@@ -122,13 +135,15 @@
   <div class="wrapper">
     <button class="nav-btn" onclick="changeDay(-1)">❮</button>
 
-    <div class="notebook-container">
+    <div class="notebook-card">
       <div class="header-date">
         <span id="display-date">--</span>
         <span id="display-dow" style="font-size: 0.85rem; color: #a0b2c6;">--</span>
       </div>
 
-      <textarea id="checkin-text" placeholder="Click here to start typing..."></textarea>
+      <div class="notebook-container">
+        <textarea id="checkin-text" placeholder="Click here to start typing..."></textarea>
+      </div>
 
       <div class="bottom-bar">
         <span id="status" class="status-msg"></span>
