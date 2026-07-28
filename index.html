@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Notebook Journal</title>
+  <title>Notebook Daily Check-In</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Quicksand:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Quicksand:wght@500;700&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,7 +15,7 @@
       justify-content: center;
       align-items: center;
       padding: 10px;
-      font-family: 'Quicksand', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .wrapper {
@@ -23,7 +23,7 @@
       align-items: center;
       gap: 12px;
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
     }
 
     .nav-btn {
@@ -53,60 +53,25 @@
     .notebook-container {
       position: relative;
       flex: 1;
-      height: 540px;
-      background: #fffdf9;
-      border: 3px solid #cbdbe6;
-      border-radius: 18px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      padding: 25px 25px 20px 50px;
-      overflow: hidden;
+      height: 560px;
+      background: url('https://github.com/mkhurziya27/Notion-Notebook-Widget/blob/main/notebook-bg.png?raw=true') no-repeat center center;
+      background-size: contain;
+      padding: 130px 45px 35px 65px;
       display: flex;
       flex-direction: column;
-    }
-
-    .spirals {
-      position: absolute;
-      left: 12px;
-      top: 20px;
-      bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      z-index: 5;
-    }
-
-    .spiral-ring {
-      width: 22px;
-      height: 12px;
-      background: linear-gradient(135deg, #e0e0e0 0%, #b5b5b5 100%);
-      border-radius: 6px;
-      box-shadow: 2px 2px 4px rgba(0,0,0,0.15);
-      border: 1px solid #9e9e9e;
     }
 
     .header-date {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #6c8ca7;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       user-select: none;
     }
 
-    .lined-paper {
-      flex: 1;
-      width: 100%;
-      background: repeating-linear-gradient(
-        transparent,
-        transparent 27px,
-        #e3e8ee 28px
-      );
-      line-height: 28px;
-    }
-
-    /* Direct Typing Area */
     textarea {
       width: 100%;
       height: 100%;
@@ -114,17 +79,12 @@
       border: none;
       outline: none;
       resize: none;
-      font-family: 'Caveat', cursive;
-      font-size: 1.55rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
       color: #2c3e50;
       line-height: 28px;
-      padding-top: 2px;
     }
-
-    .star { position: absolute; pointer-events: none; user-select: none; }
-    .star-1 { top: 15px; right: 20px; font-size: 22px; color: #fff3a7; }
-    .star-2 { bottom: 20px; left: 45px; font-size: 30px; color: #b2d8f7; }
-    .star-3 { bottom: 15px; right: 25px; font-size: 24px; color: #fff3a7; }
 
     .bottom-bar {
       display: flex;
@@ -163,27 +123,12 @@
     <button class="nav-btn" onclick="changeDay(-1)">❮</button>
 
     <div class="notebook-container">
-      <div class="spirals">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-
-      <div class="star star-1">⭐</div>
-      <div class="star star-2">⭐</div>
-      <div class="star star-3">⭐</div>
-
       <div class="header-date">
         <span id="display-date">--</span>
         <span id="display-dow" style="font-size: 0.85rem; color: #a0b2c6;">--</span>
       </div>
 
-      <div class="lined-paper">
-        <textarea id="checkin-text" placeholder="Click here to start writing..."></textarea>
-      </div>
+      <textarea id="checkin-text" placeholder="Click here to start typing..."></textarea>
 
       <div class="bottom-bar">
         <span id="status" class="status-msg"></span>
