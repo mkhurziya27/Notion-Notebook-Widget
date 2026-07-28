@@ -9,7 +9,6 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Quicksand:wght@700&display=swap');
 
     :root {
-      /* Increase 500px if you want a larger notebook. */
       --book-width: min(72vw, 500px);
     }
 
@@ -86,26 +85,27 @@
     textarea {
       position: absolute;
       z-index: 2;
-
-      /* These percentages follow the actual page inside the cropped PNG. */
       top: 23.5%;
       left: 15.5%;
       width: 76.5%;
       height: 53.5%;
-
       padding: 0 2px;
       overflow-y: auto;
       resize: none;
       border: 0;
       outline: 0;
       background: transparent;
-
       color: #2c3e50;
       caret-color: #6c8ca7;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: clamp(12px, calc(var(--book-width) * 0.03), 15px);
       font-weight: 500;
       line-height: calc(var(--book-width) * 0.049);
+    }
+
+    textarea:disabled {
+      cursor: wait;
+      opacity: 0.65;
     }
 
     textarea::placeholder {
@@ -127,7 +127,10 @@
       line-height: 1;
       cursor: pointer;
       box-shadow: 0 7px 14px rgba(96, 121, 140, 0.12);
-      transition: transform 0.15s ease, background 0.15s ease;
+      transition:
+        transform 0.15s ease,
+        background 0.15s ease,
+        opacity 0.15s ease;
     }
 
     .nav-btn:hover {
@@ -137,6 +140,12 @@
 
     .nav-btn:active {
       transform: translateY(1px);
+    }
+
+    .nav-btn:disabled {
+      cursor: wait;
+      opacity: 0.55;
+      transform: none;
     }
 
     .bottom-bar {
@@ -162,7 +171,10 @@
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 5px 10px rgba(139, 186, 187, 0.28);
-      transition: background 0.18s ease, transform 0.18s ease;
+      transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
     }
 
     .save-btn:hover {
@@ -172,7 +184,8 @@
 
     .save-btn:disabled {
       cursor: wait;
-      opacity: 0.7;
+      opacity: 0.65;
+      transform: none;
     }
 
     .status-msg {
@@ -214,14 +227,22 @@
     </div>
 
     <div class="stage">
-      <button class="nav-btn" type="button" onclick="changeDay(-1)" aria-label="Previous day">‹</button>
+      <button
+        id="previous-btn"
+        class="nav-btn"
+        type="button"
+        aria-label="Previous day"
+      >
+        ‹
+      </button>
 
       <div class="notebook-card">
         <img
-        class="notebook-art"
-        src="https://mkhurziya27.github.io/Notion-Notebook-Widget/notebook-bg-cropped.png?v=11"
-        alt=""
+          class="notebook-art"
+          src="./notebook-bg-cropped.png"
+          alt=""
         />
+
         <textarea
           id="checkin-text"
           aria-label="Daily check-in"
@@ -229,127 +250,262 @@
         ></textarea>
       </div>
 
-      <button class="nav-btn" type="button" onclick="changeDay(1)" aria-label="Next day">›</button>
+      <button
+        id="next-btn"
+        class="nav-btn"
+        type="button"
+        aria-label="Next day"
+      >
+        ›
+      </button>
     </div>
 
     <div class="bottom-bar">
-      <span id="status" class="status-msg" aria-live="polite"></span>
-      <button id="save-btn" class="save-btn" type="button" onclick="savePage()">Save Page</button>
+      <span
+        id="status"
+        class="status-msg"
+        aria-live="polite"
+      ></span>
+
+      <button
+        id="save-btn"
+        class="save-btn"
+        type="button"
+      >
+        Save Page
+      </button>
     </div>
   </main>
 
   <script>
-    /*
-      Leave this blank while testing the layout. The page will save drafts
-      inside this browser. Later, place your secure serverless endpoint here.
-
-      Example:
-      const SAVE_ENDPOINT = 'https://your-project.vercel.app/api/save';
-    */
-    const SAVE_ENDPOINT = '';
+    const API_ENDPOINT = '/api/notion';
 
     let currentDate = new Date();
+    let isLoading = false;
+    let lastLoadedText = '';
 
     const textArea = document.getElementById('checkin-text');
     const status = document.getElementById('status');
     const saveBtn = document.getElementById('save-btn');
+    const previousBtn = document.getElementById('previous-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const displayDate = document.getElementById('display-date');
+    const displayDow = document.getElementById('display-dow');
 
     function localDateKey(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
+
       return `${year}-${month}-${day}`;
     }
 
-    function storageKey(date) {
-      return `daily-checkin:${localDateKey(date)}`;
+    function draftStorageKey(date) {
+      return `daily-checkin-draft:${localDateKey(date)}`;
     }
 
-    function persistDraft() {
-      localStorage.setItem(storageKey(currentDate), textArea.value);
-    }
-
-    function updateView() {
-      document.getElementById('display-date').textContent = currentDate.toLocaleDateString(undefined, {
+    function updateDateHeading() {
+      displayDate.textContent = currentDate.toLocaleDateString('en-GB', {
         day: 'numeric',
         month: 'long'
       });
 
-      document.getElementById('display-dow').textContent = currentDate.toLocaleDateString(undefined, {
+      displayDow.textContent = currentDate.toLocaleDateString('en-GB', {
         weekday: 'long'
       });
-
-      textArea.value = localStorage.getItem(storageKey(currentDate)) || '';
-      status.textContent = '';
     }
 
-    function changeDay(offset) {
-      persistDraft();
-      currentDate.setDate(currentDate.getDate() + offset);
-      updateView();
-    }
+    function setStatus(message, type = 'neutral') {
+      status.textContent = message;
 
-    textArea.addEventListener('input', persistDraft);
-
-    async function savePage() {
-      const text = textArea.value.trim();
-
-      if (!text) {
-        status.style.color = '#d65f5f';
-        status.textContent = 'Page is empty!';
-        return;
-      }
-
-      persistDraft();
-
-      /* Layout/testing mode: safely save in this browser. */
-      if (!SAVE_ENDPOINT) {
+      if (type === 'success') {
         status.style.color = '#6a9955';
-        status.textContent = 'Saved in this browser ✨';
-        return;
+      } else if (type === 'error') {
+        status.style.color = '#d65f5f';
+      } else {
+        status.style.color = '#6c8ca7';
       }
+    }
 
-      saveBtn.disabled = true;
-      status.style.color = '#6c8ca7';
-      status.textContent = 'Saving…';
+    function setBusy(busy) {
+      isLoading = busy;
+      textArea.disabled = busy;
+      saveBtn.disabled = busy;
+      previousBtn.disabled = busy;
+      nextBtn.disabled = busy;
+    }
 
-      const payload = {
-        date: localDateKey(currentDate),
-        title: currentDate.toLocaleDateString(undefined, {
-          day: 'numeric',
-          month: 'long'
-        }),
-        dayOfWeek: currentDate.toLocaleDateString(undefined, {
-          weekday: 'long'
-        }),
-        text
-      };
+    function saveDraftLocally() {
+      const key = draftStorageKey(currentDate);
+      const value = textArea.value;
+
+      if (value === lastLoadedText) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, value);
+      }
+    }
+
+    function restoreDraftIfPresent(notionText) {
+      const savedDraft = localStorage.getItem(
+        draftStorageKey(currentDate)
+      );
+
+      if (
+        savedDraft !== null &&
+        savedDraft !== notionText
+      ) {
+        textArea.value = savedDraft;
+        setStatus('Unsaved draft restored', 'neutral');
+      } else {
+        textArea.value = notionText;
+        setStatus('');
+      }
+    }
+
+    async function loadPage() {
+      updateDateHeading();
+      setBusy(true);
+      setStatus('Loading…', 'neutral');
+
+      textArea.value = '';
+      lastLoadedText = '';
 
       try {
-        const response = await fetch(SAVE_ENDPOINT, {
+        const date = localDateKey(currentDate);
+
+        const response = await fetch(
+          `${API_ENDPOINT}?date=${encodeURIComponent(date)}`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json'
+            }
+          }
+        );
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            result.error || 'Could not load this date.'
+          );
+        }
+
+        lastLoadedText = result.text || '';
+        restoreDraftIfPresent(lastLoadedText);
+      } catch (error) {
+        console.error(error);
+
+        const savedDraft = localStorage.getItem(
+          draftStorageKey(currentDate)
+        );
+
+        textArea.value = savedDraft || '';
+
+        if (
+          error.message.includes('No habit-tracker row')
+        ) {
+          setStatus('No tracker row exists for this date', 'error');
+        } else {
+          setStatus(error.message || 'Could not load from Notion', 'error');
+        }
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function changeDay(offset) {
+      if (isLoading) {
+        return;
+      }
+
+      saveDraftLocally();
+
+      const nextDate = new Date(currentDate);
+      nextDate.setDate(nextDate.getDate() + offset);
+      currentDate = nextDate;
+
+      await loadPage();
+    }
+
+    async function savePage() {
+      if (isLoading) {
+        return;
+      }
+
+      saveDraftLocally();
+      setBusy(true);
+      setStatus('Saving…', 'neutral');
+
+      try {
+        const response = await fetch(API_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            date: localDateKey(currentDate),
+            text: textArea.value
+          })
         });
 
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(result.error || 'Save failed');
+          throw new Error(
+            result.error || 'Could not save to Notion.'
+          );
         }
 
-        status.style.color = '#6a9955';
-        status.textContent = 'Saved to Notion ✨';
+        lastLoadedText = textArea.value;
+
+        localStorage.removeItem(
+          draftStorageKey(currentDate)
+        );
+
+        setStatus('Saved to Notion ✨', 'success');
       } catch (error) {
         console.error(error);
-        status.style.color = '#d65f5f';
-        status.textContent = 'Could not save to Notion';
+
+        saveDraftLocally();
+
+        if (
+          error.message.includes('No habit-tracker row')
+        ) {
+          setStatus('No tracker row exists for this date', 'error');
+        } else {
+          setStatus(error.message || 'Could not save to Notion', 'error');
+        }
       } finally {
-        saveBtn.disabled = false;
+        setBusy(false);
       }
     }
 
-    updateView();
+    previousBtn.addEventListener('click', () => {
+      changeDay(-1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      changeDay(1);
+    });
+
+    saveBtn.addEventListener('click', savePage);
+
+    textArea.addEventListener('input', () => {
+      saveDraftLocally();
+
+      if (textArea.value !== lastLoadedText) {
+        setStatus('Unsaved changes', 'neutral');
+      } else {
+        setStatus('');
+      }
+    });
+
+    window.addEventListener('beforeunload', saveDraftLocally);
+
+    loadPage();
   </script>
 </body>
 </html>
