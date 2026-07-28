@@ -3,121 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notebook Daily Check-In</title>
+  <title>Daily Check-In Notebook</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Quicksand:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Quicksand:wght@700&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: transparent;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       padding: 10px;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      width: 100%;
-      max-width: 520px;
-    }
-
-    .nav-btn {
-      background: #e2ebf0;
-      color: #78909c;
-      border: none;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      transition: all 0.2s ease;
-      user-select: none;
-      flex-shrink: 0;
-    }
-
-    .nav-btn:hover {
-      background: #cfd8dc;
-      color: #37474f;
-      transform: scale(1.08);
-    }
-
-    .notebook-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 380px;
-    }
-
+    /* Floating Date Header Above Notebook */
     .header-date {
-      width: 100%;
-      font-size: 1.05rem;
+      width: 320px;
+      font-size: 1rem;
       font-weight: 700;
       color: #6c8ca7;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 10px;
       user-select: none;
     }
 
-    .notebook-container {
+    /* Main Container using your exact Canva PNG */
+    .notebook-card {
       position: relative;
-      width: 360px;
-      height: 480px;
+      width: 440px;
+      height: 440px;
       background: url('https://github.com/mkhurziya27/Notion-Notebook-Widget/blob/main/notebook-bg.png?raw=true') no-repeat center center;
-      background-size: 100% 100%;
-      /* Pushes typing area safely below the "daily check in" banner */
-      padding: 145px 35px 45px 55px;
-      display: flex;
-      flex-direction: column;
+      background-size: contain;
     }
 
+    /* Invisible Click Zones over the arrows in your Canva art */
+    .arrow-click-left, .arrow-click-right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 20;
+    }
+    .arrow-click-left { left: 65px; }
+    .arrow-click-right { right: 65px; }
+
+    /* Typing Area centered directly over paper lines */
     textarea {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      top: 130px;
+      left: 135px;
+      width: 180px;
+      height: 200px;
       background: transparent;
       border: none;
       outline: none;
       resize: none;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 500;
       color: #2c3e50;
       line-height: 24px;
+      z-index: 10;
     }
 
+    /* Save Controls below the graphic */
     .bottom-bar {
-      width: 100%;
+      width: 320px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 12px;
-      padding: 0 5px;
+      margin-top: 5px;
     }
 
     .save-btn {
       background-color: #8bbabb;
       color: white;
       border: none;
-      padding: 8px 20px;
-      border-radius: 20px;
+      padding: 6px 18px;
+      border-radius: 16px;
       font-family: 'Quicksand', sans-serif;
       font-weight: 700;
       font-size: 0.85rem;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(139, 186, 187, 0.35);
+      box-shadow: 0 4px 8px rgba(139, 186, 187, 0.3);
       transition: all 0.2s ease;
     }
 
@@ -132,26 +108,21 @@
 </head>
 <body>
 
-  <div class="wrapper">
-    <button class="nav-btn" onclick="changeDay(-1)">❮</button>
+  <div class="header-date">
+    <span id="display-date">--</span>
+    <span id="display-dow" style="font-size: 0.85rem; color: #a0b2c6;">--</span>
+  </div>
 
-    <div class="notebook-card">
-      <div class="header-date">
-        <span id="display-date">--</span>
-        <span id="display-dow" style="font-size: 0.85rem; color: #a0b2c6;">--</span>
-      </div>
+  <div class="notebook-card">
+    <div class="arrow-click-left" onclick="changeDay(-1)" title="Previous Day"></div>
+    <div class="arrow-click-right" onclick="changeDay(1)" title="Next Day"></div>
 
-      <div class="notebook-container">
-        <textarea id="checkin-text" placeholder="Click here to start typing..."></textarea>
-      </div>
+    <textarea id="checkin-text" placeholder="Click here to start typing..."></textarea>
+  </div>
 
-      <div class="bottom-bar">
-        <span id="status" class="status-msg"></span>
-        <button id="save-btn" class="save-btn" onclick="saveToNotion()">Save Page</button>
-      </div>
-    </div>
-
-    <button class="nav-btn" onclick="changeDay(1)">❯</button>
+  <div class="bottom-bar">
+    <span id="status" class="status-msg"></span>
+    <button id="save-btn" class="save-btn" onclick="saveToNotion()">Save Page</button>
   </div>
 
   <script>
